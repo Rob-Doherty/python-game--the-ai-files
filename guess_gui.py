@@ -14,14 +14,14 @@ def check_guess():
         guess = int(entry.get())
         attempts += 1
         if guess < secret_number:
-            feedback_label.config(text="📉 Too low! Try again.")
+            feedback_label.config(text="📉 Too low! Try again.", fg="darkblue")
         elif guess > secret_number:
-            feedback_label.config(text="📈 Too high! Try again.")
+            feedback_label.config(text="📈 Too high! Try again.", fg="darkgreen")
         else:
             messagebox.showinfo("🎉 You Win!", f"Correct! You guessed it in {attempts} tries.")
             reset_game()
     except ValueError:
-        feedback_label.config(text="❌ Please enter a valid number.")
+        feedback_label.config(text="❌ Please enter a valid number.", fg="red")
 
 # Reset game for replay
 def reset_game():
@@ -46,9 +46,14 @@ bg_photo = ImageTk.PhotoImage(bg_image)
 bg_label = tk.Label(root, image=bg_photo)
 bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
+header = tk.Label(root, text="🎯 Welcome to the Guess the Number Game!\nI'm thinking of a number between 1 and 100.", font=("Helvetica", 14))
+header.place(x=50, y=50)
+
 # Entry box for guesses
 entry = tk.Entry(root, font=("Helvetica", 16))
 entry.place(x=150, y=150, width=200)
+# Press Enter to submit guess
+entry.bind("<Return>", lambda event: check_guess())
 
 # Guess button
 guess_button = tk.Button(root, text="Guess", font=("Helvetica", 14), command=check_guess)
