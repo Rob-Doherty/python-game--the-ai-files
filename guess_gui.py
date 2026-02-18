@@ -7,65 +7,127 @@ import random
 secret_number = random.randint(1, 100)
 attempts = 0
 
-# Function to check the user's guess
-def check_guess():
+# ---------- FUNCTIONS ----------
+
+def check_guess(event=None):
     global attempts
     try:
         guess = int(entry.get())
         attempts += 1
+
         if guess < secret_number:
-            feedback_label.config(text="📉 Too low! Try again.", fg="darkblue")
+            canvas.itemconfig(feedback, text="📉 Too low! Try again.", fill="cyan")
+
         elif guess > secret_number:
-            feedback_label.config(text="📈 Too high! Try again.", fg="darkgreen")
+            canvas.itemconfig(feedback, text="📈 Too high! Try again.", fill="lightgreen")
+
         else:
             messagebox.showinfo("🎉 You Win!", f"Correct! You guessed it in {attempts} tries.")
             reset_game()
-    except ValueError:
-        feedback_label.config(text="❌ Please enter a valid number.", fg="red")
 
-# Reset game for replay
+    except ValueError:
+        canvas.itemconfig(feedback, text="❌ Enter a valid number.", fill="red")
+
+
 def reset_game():
     global secret_number, attempts
     secret_number = random.randint(1, 100)
     attempts = 0
     entry.delete(0, tk.END)
-    feedback_label.config(text="")
+    canvas.itemconfig(feedback, text="")
 
-# Set up the window
+
+def button_press(action):
+    if action == "guess":
+        check_guess()
+    elif action == "reset":
+        reset_game()
+
+
+# ---------- WINDOW ----------
+
 root = tk.Tk()
 root.title("Guess the Number - Log Cabin Edition")
 root.geometry("500x400")
 root.resizable(False, False)
 
-# Load and display the background image
-bg_image = Image.open("log_cabin_background.png")
-# bg_image = bg_image.resize((500, 400), Image.ANTIALIAS)
-bg_image = bg_image.resize((500, 400))
+# ---------- CANVAS ----------
+
+canvas = tk.Canvas(root, width=500, height=400, highlightthickness=0)
+canvas.pack()
+
+# ---------- BACKGROUND IMAGE ----------
+
+bg_image = Image.open("log_cabin_background.png").resize((500, 400))
 bg_photo = ImageTk.PhotoImage(bg_image)
 
-bg_label = tk.Label(root, image=bg_photo)
-bg_label.place(x=0, y=0, relwidth=1, relheight=1)
+canvas.create_image(0, 0, anchor="nw", image=bg_photo)
 
-header = tk.Label(root, text="🎯 Welcome to the Guess the Number Game!\nI'm thinking of a number between 1 and 100.", font=("Helvetica", 14))
-header.place(x=50, y=50)
+# ---------- TITLE ----------
 
-# Entry box for guesses
-entry = tk.Entry(root, font=("Helvetica", 16))
-entry.place(x=150, y=150, width=200)
-# Press Enter to submit guess
-entry.bind("<Return>", lambda event: check_guess())
+header_text = "🎯 Welcome to the Guess the Number Game!\nI'm thinking of a number between 1 and 100."
 
-# Guess button
-guess_button = tk.Button(root, text="Guess", font=("Helvetica", 14), command=check_guess)
-guess_button.place(x=210, y=200)
+# shadow
+for dx, dy in [(1,0),(-1,0),(0,1),(0,-1)]:
+    canvas.create_text(250+dx, 50+dy,
+                       text=header_text,
+                       font=("Helvetica", 14, "bold"),
+                       fill="black")
 
-# Feedback label
-feedback_label = tk.Label(root, text="", font=("Helvetica", 14), bg="white")
-feedback_label.place(x=150, y=250, width=200)
+# main text
+canvas.create_text(250, 50,
+                   text=header_text,
+                   font=("Helvetica", 14, "bold"),
+                   fill="white")
 
-# Reset button
-reset_button = tk.Button(root, text="Reset Game", font=("Helvetica", 12), command=reset_game)
-reset_button.place(x=200, y=300)
+# ---------- ENTRY BOX (embedded widget) ----------
 
-# Run the GUI loop
+entry = tk.Entry(root, font=("Helvetica", 16), justify="center")
+canvas.create_window(250, 150, window=entry, width=200)
+
+entry.bind("<Return>", check_guess)
+
+# ---------- CANVAS BUTTONS ----------
+
+def draw_button(x, y, text, action):
+    rect = canvas.create_rectangle(x-70, y-20, x+70, y+20,
+                                   fill="#3b6ea5", outline="white", width=2)
+
+    label = canvas.create_text(x, y, text=text,
+                               font=("Helvetica", 13, "bold"),
+                               fill="white")
+
+    def on_click(event):
+        button_press(action)
+
+    canvas.tag_bind(rect, "<Button-1>", on_click)
+    canvas.tag_bind(label, "<Button-1>", on_click)
+
+    # hover glow
+    def on_enter(e):
+        canvas.itemconfig(rect, fill="#5a8fd6")
+
+    def on_leave(e):
+        canvas.itemconfig(rect, fill="#3b6ea5")
+
+    canvas.tag_bind(rect, "<Enter>", on_enter)
+    canvas.tag_bind(rect, "<Leave>", on_leave)
+    canvas.tag_bind(label, "<Enter>", on_enter)
+    canvas.tag_bind(label, "<Leave>", on_leave)
+
+
+draw_button(250, 210, "Guess", "guess")
+draw_button(250, 300, "Reset Game", "reset")
+
+# ---------- FEEDBACK TEXT ----------
+
+feedback = canvas.create_text(
+    250, 260,
+    text="",
+    font=("Helvetica", 14, "bold"),
+    fill="white"
+)
+
+# ---------- RUN ----------
+
 root.mainloop()
