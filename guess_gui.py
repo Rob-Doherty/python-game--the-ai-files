@@ -16,7 +16,6 @@ def wait_for_key(text_item, subText_item=None):
         canvas.delete(text_item)
         if subText_item:
             canvas.delete(subText_item)
-        canvas.delete(feedback)
 
         root.unbind("<Key>")   # remove listener
         animating = False
@@ -29,7 +28,11 @@ def win_animation():
     global animating
     animating = True
     size = 10
-    y = 255
+    y = 230
+
+    canvas.itemconfig(feedback, text="")
+    canvas.itemconfig(guess_btn["rect"], state="hidden")
+    canvas.itemconfig(guess_btn["text"], state="hidden")
 
     text = canvas.create_text(
         250, y,
@@ -94,6 +97,9 @@ def reset_game():
     attempts = 0
     entry.delete(0, tk.END)
     canvas.itemconfig(feedback, text="")
+    canvas.itemconfig(guess_btn["rect"], state="normal")
+    canvas.itemconfig(guess_btn["text"], state="normal")
+
 
 
 def button_press(action):
@@ -174,8 +180,9 @@ def draw_button(x, y, text, action):
     canvas.tag_bind(label, "<Enter>", on_enter)
     canvas.tag_bind(label, "<Leave>", on_leave)
 
+    return rect, label
 
-draw_button(250, 210, "Guess", "guess")
+guess_btn = dict(zip(("rect", "text"), draw_button(250, 210, "Guess", "guess")))
 draw_button(250, 300, "Reset Game", "reset")
 
 # ---------- FEEDBACK TEXT ----------
