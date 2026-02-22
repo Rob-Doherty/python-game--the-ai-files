@@ -24,6 +24,7 @@ Steps Complete:
 - bugs fixed
   - result text is white on white background: quickly corrected with multiple suggestions. all worked. 
 - keyboard shortcut - enter to submit
+- winner animation
 
 
 Next Steps:
@@ -33,3 +34,13 @@ Next Steps:
 - some GUI improvements (exit button, centered text, refresh of result)
 - containerise
 - pipeline
+
+
+ChatGPT Findings:
+- Gives reasonably good standard of simple python code. Not sure why 'pro tips' aren't just part of the response.
+- Good at suggesting improvements, not good at suggesting more reusable code. 
+- Refactoring suggestions are few and far between, even when it's an obviously good time to break up growing files.
+- Bugs found that were functional, usability and design issues, though so far it has been fairly good at correcting. Examples:
+  - white text on white background. Resolved quickly.
+  - several suggestions to introduce transparency didn't work. Resolved eventually with wider refactor.
+  - resetting game stops buttons from working. Game has to be closed.

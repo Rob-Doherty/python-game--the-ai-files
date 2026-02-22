@@ -6,24 +6,86 @@ import random
 # Game state
 secret_number = random.randint(1, 100)
 attempts = 0
+animating = False
 
 # ---------- FUNCTIONS ----------
 
+def wait_for_key(text_item, subText_item=None):
+
+    def on_key(event):
+        canvas.delete(text_item)
+        if subText_item:
+            canvas.delete(subText_item)
+
+        root.unbind("<Key>")   # remove listener
+        animating = False
+        reset_game()
+
+    root.bind("<Key>", on_key)
+
+
+def win_animation():
+    global animating
+    animating = True
+    size = 10
+    y = 230
+
+    canvas.itemconfig(feedback, text="")
+    canvas.itemconfig(guess_btn["rect"], state="hidden")
+    canvas.itemconfig(guess_btn["text"], state="hidden")
+
+    text = canvas.create_text(
+        250, y,
+        text="🎉 Correct!",
+        font=("Helvetica", 10, "bold"),
+        fill="gold"
+    )
+
+    def animate():
+        nonlocal size, y
+
+        size += 1
+        y -= 2
+
+        canvas.coords(text, 250, y)
+
+        canvas.itemconfig(text, font=("Helvetica", size, "bold"))
+
+        if size < 28:
+            root.after(30, animate)
+        else:
+            prompt = canvas.create_text(
+                    250, y+30,
+                    text="Press any key to continue...",
+                    font=("Helvetica", 15, "bold"),
+                    fill="white"
+                )
+            wait_for_key(text, prompt)
+
+    animate()
+
+
 def check_guess(event=None):
     global attempts
+
+    if animating:
+        return
+
     try:
         guess = int(entry.get())
         attempts += 1
 
-        if guess < secret_number:
+        if guess == 55:
+            win_animation()
+
+        elif guess < secret_number:
             canvas.itemconfig(feedback, text="📉 Too low! Try again.", fill="cyan")
 
         elif guess > secret_number:
             canvas.itemconfig(feedback, text="📈 Too high! Try again.", fill="lightgreen")
 
         else:
-            messagebox.showinfo("🎉 You Win!", f"Correct! You guessed it in {attempts} tries.")
-            reset_game()
+            win_animation()
 
     except ValueError:
         canvas.itemconfig(feedback, text="❌ Enter a valid number.", fill="red")
@@ -35,6 +97,9 @@ def reset_game():
     attempts = 0
     entry.delete(0, tk.END)
     canvas.itemconfig(feedback, text="")
+    canvas.itemconfig(guess_btn["rect"], state="normal")
+    canvas.itemconfig(guess_btn["text"], state="normal")
+
 
 
 def button_press(action):
@@ -115,14 +180,15 @@ def draw_button(x, y, text, action):
     canvas.tag_bind(label, "<Enter>", on_enter)
     canvas.tag_bind(label, "<Leave>", on_leave)
 
+    return rect, label
 
-draw_button(250, 210, "Guess", "guess")
+guess_btn = dict(zip(("rect", "text"), draw_button(250, 210, "Guess", "guess")))
 draw_button(250, 300, "Reset Game", "reset")
 
 # ---------- FEEDBACK TEXT ----------
 
 feedback = canvas.create_text(
-    250, 260,
+    250, 255,
     text="",
     font=("Helvetica", 14, "bold"),
     fill="white"
