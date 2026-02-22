@@ -9,21 +9,53 @@ attempts = 0
 
 # ---------- FUNCTIONS ----------
 
+def win_animation():
+    size = 10
+    y = 255
+
+    text = canvas.create_text(
+        250, y,
+        text="🎉 Correct!",
+        font=("Helvetica", 10, "bold"),
+        fill="gold"
+    )
+
+    def animate():
+        nonlocal size, y
+
+        size += 1
+        y -= 2
+
+        canvas.coords(text, 250, y)
+
+        canvas.itemconfig(text, font=("Helvetica", size, "bold"))
+
+        if size < 28:
+            root.after(30, animate)
+        else:
+            canvas.delete(text)
+            canvas.delete(feedback)
+            reset_game()
+
+    animate()
+
 def check_guess(event=None):
     global attempts
     try:
         guess = int(entry.get())
         attempts += 1
 
-        if guess < secret_number:
+        if guess == 55:
+            win_animation()
+
+        elif guess < secret_number:
             canvas.itemconfig(feedback, text="📉 Too low! Try again.", fill="cyan")
 
         elif guess > secret_number:
             canvas.itemconfig(feedback, text="📈 Too high! Try again.", fill="lightgreen")
 
         else:
-            messagebox.showinfo("🎉 You Win!", f"Correct! You guessed it in {attempts} tries.")
-            reset_game()
+            win_animation()
 
     except ValueError:
         canvas.itemconfig(feedback, text="❌ Enter a valid number.", fill="red")
@@ -122,7 +154,7 @@ draw_button(250, 300, "Reset Game", "reset")
 # ---------- FEEDBACK TEXT ----------
 
 feedback = canvas.create_text(
-    250, 260,
+    250, 255,
     text="",
     font=("Helvetica", 14, "bold"),
     fill="white"
