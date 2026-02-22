@@ -6,10 +6,28 @@ import random
 # Game state
 secret_number = random.randint(1, 100)
 attempts = 0
+animating = False
 
 # ---------- FUNCTIONS ----------
 
+def wait_for_key(text_item, subText_item=None):
+
+    def on_key(event):
+        canvas.delete(text_item)
+        if subText_item:
+            canvas.delete(subText_item)
+        canvas.delete(feedback)
+
+        root.unbind("<Key>")   # remove listener
+        animating = False
+        reset_game()
+
+    root.bind("<Key>", on_key)
+
+
 def win_animation():
+    global animating
+    animating = True
     size = 10
     y = 255
 
@@ -33,14 +51,23 @@ def win_animation():
         if size < 28:
             root.after(30, animate)
         else:
-            canvas.delete(text)
-            canvas.delete(feedback)
-            reset_game()
+            prompt = canvas.create_text(
+                    250, y+30,
+                    text="Press any key to continue...",
+                    font=("Helvetica", 15, "bold"),
+                    fill="white"
+                )
+            wait_for_key(text, prompt)
 
     animate()
 
+
 def check_guess(event=None):
     global attempts
+
+    if animating:
+        return
+
     try:
         guess = int(entry.get())
         attempts += 1
